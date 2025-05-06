@@ -10,12 +10,30 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
+import com.daffa0049.todomahasiswaapp.data.UserPreferences
+
 
 class TugasViewModel(private val repository: TugasRepository) : ViewModel() {
 
     val semuaTugas: StateFlow<List<Tugas>> = repository.semuaTugas
         .map { it }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+
+    private lateinit var userPreferences: UserPreferences
+
+    fun setUserPreferences(prefs: UserPreferences) {
+        userPreferences = prefs
+    }
+
+    val filterSelesai: Flow<Boolean>
+        get() = userPreferences.filterSelesai
+
+    fun setFilterSelesai(enabled: Boolean) {
+        viewModelScope.launch {
+            userPreferences.setFilterSelesai(enabled)
+        }
+    }
 
     fun getTugasById(id: Int): Flow<Tugas?> = repository.getTugasById(id)
 
@@ -37,3 +55,5 @@ class TugasViewModel(private val repository: TugasRepository) : ViewModel() {
         }
     }
 }
+
+
