@@ -7,9 +7,11 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.daffa0049.todomahasiswaapp.data.UserPreferences
+import com.daffa0049.todomahasiswaapp.viewmodel.TugasViewModel
+import com.daffa0049.todomahasiswaapp.viewmodel.TugasViewModelFactory
 import com.daffa0049.todomahasiswaapp.ui.screens.DaftarTugasScreen
 import com.daffa0049.todomahasiswaapp.ui.screens.FormTugasScreen
-import com.daffa0049.todomahasiswaapp.viewmodel.TugasViewModel
 
 sealed class Screen(val route: String) {
     object DaftarTugas : Screen("daftar_tugas")
@@ -21,17 +23,19 @@ sealed class Screen(val route: String) {
 @Composable
 fun TodoNavGraph(
     navController: NavHostController,
-    viewModel: TugasViewModel,
+    viewModelFactory: TugasViewModelFactory,
+    prefs: UserPreferences, // Tambahkan parameter prefs
     modifier: Modifier = Modifier
-)
- {
+) {
     NavHost(
         navController = navController,
         startDestination = Screen.DaftarTugas.route,
         modifier = modifier
     ) {
         composable(Screen.DaftarTugas.route) {
-            DaftarTugasScreen(navController)
+            val viewModel: TugasViewModel = viewModel(factory = viewModelFactory)
+            viewModel.setUserPreferences(prefs)  // Pastikan ini dipanggil
+            DaftarTugasScreen(navController, viewModel)
         }
 
         composable(
@@ -42,15 +46,9 @@ fun TodoNavGraph(
             })
         ) { backStackEntry ->
             val id = backStackEntry.arguments?.getString("id")?.toIntOrNull()
+            val viewModel: TugasViewModel = viewModel(factory = viewModelFactory)
+            viewModel.setUserPreferences(prefs)  // Pastikan ini dipanggil
             FormTugasScreen(navController, viewModel, id)
-        }
-
-
-        composable(Screen.FormTugas.route) {
-            FormTugasScreen(
-                navController = navController,
-                viewModel = viewModel()
-            )
         }
     }
 }
