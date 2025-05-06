@@ -44,19 +44,6 @@ fun DaftarTugasScreen(
             Text("Daftar Tugas", style = MaterialTheme.typography.titleLarge)
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Switch Filter
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(bottom = 16.dp)
-            ) {
-                Text("Tampilkan hanya yang belum selesai")
-                Spacer(modifier = Modifier.width(8.dp))
-                Switch(
-                    checked = filterOnlyUnfinished,
-                    onCheckedChange = { viewModel.setFilterSelesai(it) }
-                )
-            }
-
             if (tugasDitampilkan.isEmpty()) {
                 Text("Belum ada tugas")
             } else {
