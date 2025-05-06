@@ -1,5 +1,6 @@
 package com.daffa0049.todomahasiswaapp.ui.screens
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -8,6 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.daffa0049.todomahasiswaapp.data.Tugas
+import com.daffa0049.todomahasiswaapp.ui.nav.Screen
 import com.daffa0049.todomahasiswaapp.viewmodel.TugasViewModel
 
 @Composable
@@ -63,6 +65,10 @@ fun DaftarTugasScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 4.dp)
+                            .clickable {
+                                // Menavigasi ke halaman edit tugas dengan mengirimkan tugasId
+                                navController.navigate(Screen.FormTugas.createRoute(tugas.id))
+                            }
                     ) {
                         Column(modifier = Modifier.padding(16.dp)) {
                             Text(tugas.nama, style = MaterialTheme.typography.bodyLarge)
@@ -82,30 +88,29 @@ fun DaftarTugasScreen(
                             }
                         }
                     }
-                }
-            }
-
-            if (tugasUntukDihapus != null) {
-                AlertDialog(
-                    onDismissRequest = { tugasUntukDihapus = null },
-                    title = { Text("Konfirmasi") },
-                    text = { Text("Apakah yakin ingin menghapus tugas ini?") },
-                    confirmButton = {
-                        TextButton(onClick = {
-                            viewModel.hapusTugas(tugasUntukDihapus!!)
-                            tugasUntukDihapus = null
-                        }) {
-                            Text("Ya")
-                        }
-                    },
-                    dismissButton = {
-                        TextButton(onClick = {
-                            tugasUntukDihapus = null
-                        }) {
-                            Text("Batal")
-                        }
+                    if (tugasUntukDihapus != null) {
+                        AlertDialog(
+                            onDismissRequest = { tugasUntukDihapus = null },
+                            title = { Text("Konfirmasi") },
+                            text = { Text("Apakah yakin ingin menghapus tugas ini?") },
+                            confirmButton = {
+                                TextButton(onClick = {
+                                    viewModel.hapusTugas(tugasUntukDihapus!!)
+                                    tugasUntukDihapus = null
+                                }) {
+                                    Text("Ya")
+                                }
+                            },
+                            dismissButton = {
+                                TextButton(onClick = {
+                                    tugasUntukDihapus = null
+                                }) {
+                                    Text("Batal")
+                                }
+                            }
+                        )
                     }
-                )
+                }
             }
         }
     }
