@@ -3,9 +3,9 @@ package com.daffa0049.todomahasiswaapp.ui.screens
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.daffa0049.todomahasiswaapp.data.Tugas
 import com.daffa0049.todomahasiswaapp.viewmodel.TugasViewModel
@@ -13,10 +13,17 @@ import com.daffa0049.todomahasiswaapp.viewmodel.TugasViewModel
 @Composable
 fun DaftarTugasScreen(
     navController: NavController,
-    viewModel: TugasViewModel = viewModel()
+    viewModel: TugasViewModel
 ) {
     val daftarTugas by viewModel.semuaTugas.collectAsState()
+    val filterOnlyUnfinished by viewModel.filterSelesai.collectAsState(initial = false)
     var tugasUntukDihapus by remember { mutableStateOf<Tugas?>(null) }
+
+    val tugasDitampilkan = if (filterOnlyUnfinished) {
+        daftarTugas.filter { !it.selesai }
+    } else {
+        daftarTugas
+    }
 
     Scaffold(
         floatingActionButton = {
@@ -35,10 +42,23 @@ fun DaftarTugasScreen(
             Text("Daftar Tugas", style = MaterialTheme.typography.titleLarge)
             Spacer(modifier = Modifier.height(8.dp))
 
-            if (daftarTugas.isEmpty()) {
+            // Switch Filter
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(bottom = 16.dp)
+            ) {
+                Text("Tampilkan hanya yang belum selesai")
+                Spacer(modifier = Modifier.width(8.dp))
+                Switch(
+                    checked = filterOnlyUnfinished,
+                    onCheckedChange = { viewModel.setFilterSelesai(it) }
+                )
+            }
+
+            if (tugasDitampilkan.isEmpty()) {
                 Text("Belum ada tugas")
             } else {
-                daftarTugas.forEach { tugas ->
+                tugasDitampilkan.forEach { tugas ->
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
