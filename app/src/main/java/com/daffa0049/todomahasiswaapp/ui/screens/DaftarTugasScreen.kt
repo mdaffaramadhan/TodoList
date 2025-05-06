@@ -15,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.daffa0049.todomahasiswaapp.ui.nav.Screen
@@ -26,6 +27,16 @@ fun DaftarTugasScreen(
     viewModel: TugasViewModel
 ) {
     val daftarTugas by viewModel.semuaTugas.collectAsState()
+
+    // Menentukan warna berdasarkan prioritas
+    fun getPrioritasColor(prioritas: String): Color {
+        return when (prioritas) {
+            "Urgent" -> Color.Red
+            "Biasa" -> Color.Yellow
+            "Santai" -> Color.Green
+            else -> Color.Gray // Default warna
+        }
+    }
 
     Scaffold(
         floatingActionButton = {
@@ -58,7 +69,17 @@ fun DaftarTugasScreen(
                     ) {
                         Column(modifier = Modifier.padding(16.dp)) {
                             Text(tugas.nama, style = MaterialTheme.typography.bodyLarge)
+
+                            // Menampilkan deadline tugas
                             Text("Deadline: ${tugas.deadline}")
+
+                            // Menampilkan prioritas dengan warna yang sesuai
+                            Text(
+                                text = "Prioritas: ${tugas.prioritas}",
+                                style = MaterialTheme.typography.bodyLarge.copy(
+                                    color = getPrioritasColor(tugas.prioritas) // Mengatur warna berdasarkan prioritas
+                                )
+                            )
                         }
                     }
                 }
@@ -66,4 +87,3 @@ fun DaftarTugasScreen(
         }
     }
 }
-
