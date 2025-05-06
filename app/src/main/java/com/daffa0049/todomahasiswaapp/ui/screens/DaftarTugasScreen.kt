@@ -2,43 +2,84 @@ package com.daffa0049.todomahasiswaapp.ui.screens
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.Card
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.daffa0049.todomahasiswaapp.ui.nav.Screen
+import com.daffa0049.todomahasiswaapp.R
 import com.daffa0049.todomahasiswaapp.viewmodel.TugasViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DaftarTugasScreen(
     navController: NavController,
     viewModel: TugasViewModel
 ) {
     val daftarTugas by viewModel.semuaTugas.collectAsState()
+    var filterTugas by remember { mutableStateOf("Semua") }
+    var expanded by remember { mutableStateOf(false) }
 
-    // Menentukan warna berdasarkan prioritas
-    fun getPrioritasColor(prioritas: String): Color {
-        return when (prioritas) {
-            "Urgent" -> Color.Red
-            "Biasa" -> Color.Yellow
-            "Santai" -> Color.Green
-            else -> Color.Gray // Default warna
-        }
+    val filterOptions = listOf("Semua", "Urgent", "Biasa", "Santai")
+
+    val filteredTugas = when (filterTugas) {
+        "Urgent" -> daftarTugas.filter { it.prioritas == "Urgent" }
+        "Biasa" -> daftarTugas.filter { it.prioritas == "Biasa" }
+        "Santai" -> daftarTugas.filter { it.prioritas == "Santai" }
+        else -> daftarTugas
     }
 
+    // Variabel untuk kontrol tampilan grid/list
+    var isGrid by remember { mutableStateOf(false) }
+
     Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Daftar Tugas") },
+                actions = {
+                    Row {
+                        // Tombol untuk mengubah tampilan grid/list
+                        IconButton(
+                            onClick = { isGrid = !isGrid },
+                            modifier = Modifier.padding(8.dp)
+                        ) {
+                            // Menampilkan ikon list/grid
+                            Icon(
+                                painter = painterResource(id = if (isGrid) R.drawable.baseline_list_24 else R.drawable.baseline_grid_view_24),
+                                contentDescription = "Tampilan Grid/List",
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+                    }
+                }
+            )
+        },
         floatingActionButton = {
             FloatingActionButton(onClick = {
                 navController.navigate("form_tugas")
@@ -52,34 +93,100 @@ fun DaftarTugasScreen(
                 .padding(padding)
                 .padding(16.dp)
         ) {
-            Text("Daftar Tugas", style = MaterialTheme.typography.titleLarge)
+            // Dropdown filter untuk memilih prioritas
+            ExposedDropdownMenuBox(
+                expanded = expanded,
+                onExpandedChange = { expanded = !expanded },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                TextField(
+                    value = filterTugas,
+                    onValueChange = {},
+                    label = { Text("Filter Tugas") },
+                    readOnly = true,
+                    trailingIcon = {
+                        Icon(
+                            imageVector = Icons.Filled.ArrowDropDown,
+                            contentDescription = "Dropdown"
+                        )
+                    },
+                    modifier = Modifier
+                        .menuAnchor()
+                        .fillMaxWidth()
+                )
+
+                ExposedDropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false }
+                ) {
+                    filterOptions.forEach { option ->
+                        DropdownMenuItem(
+                            text = { Text(option) },
+                            onClick = {
+                                filterTugas = option
+                                expanded = false
+                            }
+                        )
+                    }
+                }
+            }
+
             Spacer(modifier = Modifier.height(8.dp))
 
-            if (daftarTugas.isEmpty()) {
+            if (filteredTugas.isEmpty()) {
                 Text("Belum ada tugas")
             } else {
-                daftarTugas.forEach { tugas ->
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp)
-                            .clickable {
-                                navController.navigate(Screen.FormTugas.createRoute(tugas.id))
+                // Menampilkan tugas dalam tampilan list/grid
+                if (isGrid) {
+                    // Menampilkan tugas dalam grid (ganti dengan grid layout nanti)
+                    // Misalnya bisa menggunakan Grid atau LazyVerticalGrid
+                    filteredTugas.chunked(2).forEach { tugasPair ->
+                        Row(modifier = Modifier.fillMaxWidth()) {
+                            tugasPair.forEach { tugas ->
+                                Card(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .padding(4.dp)
+                                        .clickable {
+                                            navController.navigate("form_tugas/${tugas.id}")
+                                        }
+                                ) {
+                                    Column(modifier = Modifier.padding(16.dp)) {
+                                        Text(tugas.nama, style = MaterialTheme.typography.bodyLarge)
+                                        Text("Deadline: ${tugas.deadline}")
+                                        Text("Prioritas: ${tugas.prioritas}")
+                                    }
+                                }
                             }
-                    ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            Text(tugas.nama, style = MaterialTheme.typography.bodyLarge)
+                        }
+                    }
+                } else {
+                    // Menampilkan tugas dalam list
+                    filteredTugas.forEach { tugas ->
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp)
+                                .clickable {
+                                    navController.navigate("form_tugas?id=${tugas.id}")
+                                }
+                        ) {
+                            Column(modifier = Modifier.padding(16.dp)) {
+                                Text(tugas.nama, style = MaterialTheme.typography.bodyLarge)
+                                Text("Deadline: ${tugas.deadline}")
+                                val prioritasColor = when (tugas.prioritas) {
+                                    "Urgent" -> Color.Red
+                                    "Biasa" -> Color.Yellow
+                                    "Santai" -> Color.Green
+                                    else -> Color.Gray
+                                }
 
-                            // Menampilkan deadline tugas
-                            Text("Deadline: ${tugas.deadline}")
-
-                            // Menampilkan prioritas dengan warna yang sesuai
-                            Text(
-                                text = "Prioritas: ${tugas.prioritas}",
-                                style = MaterialTheme.typography.bodyLarge.copy(
-                                    color = getPrioritasColor(tugas.prioritas) // Mengatur warna berdasarkan prioritas
+                                Text(
+                                    "Prioritas: ${tugas.prioritas}",
+                                    color = prioritasColor
                                 )
-                            )
+
+                            }
                         }
                     }
                 }
