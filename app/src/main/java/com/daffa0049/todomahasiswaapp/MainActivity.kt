@@ -3,45 +3,29 @@ package com.daffa0049.todomahasiswaapp
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.compose.rememberNavController
+import com.daffa0049.todomahasiswaapp.data.TugasDatabase
+import com.daffa0049.todomahasiswaapp.repository.TugasRepository
+import com.daffa0049.todomahasiswaapp.ui.nav.TodoNavGraph
 import com.daffa0049.todomahasiswaapp.ui.theme.TodoMahasiswaAppTheme
+import com.daffa0049.todomahasiswaapp.viewmodel.TugasViewModel
+import com.daffa0049.todomahasiswaapp.viewmodel.TugasViewModelFactory
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+
+        val database = TugasDatabase.getDatabase(this)
+        val repository = TugasRepository(database.tugasDao())
+        val viewModelFactory = TugasViewModelFactory(repository)
+
         setContent {
             TodoMahasiswaAppTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
+                val navController = rememberNavController()
+                val viewModel: TugasViewModel = viewModel(factory = viewModelFactory)
+                TodoNavGraph(navController = navController)
             }
         }
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    TodoMahasiswaAppTheme {
-        Greeting("Android")
     }
 }
