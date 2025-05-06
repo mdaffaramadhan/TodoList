@@ -1,14 +1,22 @@
 package com.daffa0049.todomahasiswaapp.ui.screens
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Card
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.daffa0049.todomahasiswaapp.data.Tugas
 import com.daffa0049.todomahasiswaapp.ui.nav.Screen
 import com.daffa0049.todomahasiswaapp.viewmodel.TugasViewModel
 
@@ -18,14 +26,6 @@ fun DaftarTugasScreen(
     viewModel: TugasViewModel
 ) {
     val daftarTugas by viewModel.semuaTugas.collectAsState()
-    val filterOnlyUnfinished by viewModel.filterSelesai.collectAsState(initial = false)
-    var tugasUntukDihapus by remember { mutableStateOf<Tugas?>(null) }
-
-    val tugasDitampilkan = if (filterOnlyUnfinished) {
-        daftarTugas.filter { !it.selesai }
-    } else {
-        daftarTugas
-    }
 
     Scaffold(
         floatingActionButton = {
@@ -44,61 +44,26 @@ fun DaftarTugasScreen(
             Text("Daftar Tugas", style = MaterialTheme.typography.titleLarge)
             Spacer(modifier = Modifier.height(8.dp))
 
-            if (tugasDitampilkan.isEmpty()) {
+            if (daftarTugas.isEmpty()) {
                 Text("Belum ada tugas")
             } else {
-                tugasDitampilkan.forEach { tugas ->
+                daftarTugas.forEach { tugas ->
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 4.dp)
                             .clickable {
-                                // Menavigasi ke halaman edit tugas dengan mengirimkan tugasId
                                 navController.navigate(Screen.FormTugas.createRoute(tugas.id))
                             }
                     ) {
                         Column(modifier = Modifier.padding(16.dp)) {
                             Text(tugas.nama, style = MaterialTheme.typography.bodyLarge)
                             Text("Deadline: ${tugas.deadline}")
-                            Text("Status: ${if (tugas.selesai) "Selesai" else "Belum"}")
-                            Row(modifier = Modifier.padding(top = 8.dp)) {
-                                Button(
-                                    onClick = {
-                                        tugasUntukDihapus = tugas
-                                    },
-                                    colors = ButtonDefaults.buttonColors(
-                                        containerColor = MaterialTheme.colorScheme.error
-                                    )
-                                ) {
-                                    Text("Hapus", color = MaterialTheme.colorScheme.onError)
-                                }
-                            }
                         }
-                    }
-                    if (tugasUntukDihapus != null) {
-                        AlertDialog(
-                            onDismissRequest = { tugasUntukDihapus = null },
-                            title = { Text("Konfirmasi") },
-                            text = { Text("Apakah yakin ingin menghapus tugas ini?") },
-                            confirmButton = {
-                                TextButton(onClick = {
-                                    viewModel.hapusTugas(tugasUntukDihapus!!)
-                                    tugasUntukDihapus = null
-                                }) {
-                                    Text("Ya")
-                                }
-                            },
-                            dismissButton = {
-                                TextButton(onClick = {
-                                    tugasUntukDihapus = null
-                                }) {
-                                    Text("Batal")
-                                }
-                            }
-                        )
                     }
                 }
             }
         }
     }
 }
+

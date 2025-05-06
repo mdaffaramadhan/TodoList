@@ -1,20 +1,23 @@
 package com.daffa0049.todomahasiswaapp.ui.screens
 
 import android.app.DatePickerDialog
-import android.content.Context
 import android.widget.DatePicker
+import android.widget.ImageButton
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavController
+import com.daffa0049.todomahasiswaapp.R
 import com.daffa0049.todomahasiswaapp.data.Tugas
 import com.daffa0049.todomahasiswaapp.viewmodel.TugasViewModel
-import kotlinx.coroutines.flow.flowOf
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -27,28 +30,15 @@ fun FormTugasScreen(
 ) {
     var namaTugas by remember { mutableStateOf("") }
     var deadline by remember { mutableStateOf("") }
-    var isDialogOpen by remember { mutableStateOf(false) }
+    var prioritas by remember { mutableStateOf("Urgent") } // Default pilihan prioritas
+    val prioritasList = listOf("Urgent", "Biasa", "Santai") // Daftar prioritas
 
-    // Mengambil tugas lama jika ada
-    val tugasLama by remember(tugasId) {
-        if (tugasId != null) {
-            viewModel.getTugasById(tugasId)
-        } else {
-            flowOf(null)
-        }
-    }.collectAsState(initial = null)
-
-    // Mengupdate UI dengan data tugas lama
-    LaunchedEffect(tugasLama) {
-        tugasLama?.let {
-            namaTugas = it.nama
-            deadline = it.deadline
-        }
-    }
+    // Menggunakan LocalContext di dalam fungsi Composable
+    val context = LocalContext.current
+    val calendar = Calendar.getInstance()
 
     // Fungsi untuk membuka dialog pemilih tanggal
-    val openDatePicker = { context: Context ->
-        val calendar = Calendar.getInstance()
+    val openDatePicker = {
         val datePickerDialog = DatePickerDialog(
             context,
             { _: DatePicker, year: Int, month: Int, dayOfMonth: Int ->
@@ -74,13 +64,12 @@ fun FormTugasScreen(
             )
         }
     ) { padding ->
-        val context = LocalContext.current // Ambil context di dalam composable
-
         Column(
             modifier = Modifier
                 .padding(padding)
                 .padding(16.dp)
         ) {
+            // Input Nama Tugas
             OutlinedTextField(
                 value = namaTugas,
                 onValueChange = { namaTugas = it },
@@ -90,24 +79,54 @@ fun FormTugasScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Hapus Input untuk Deadline Manual
-            // Tampilkan hanya tanggal yang dipilih
-            OutlinedTextField(
-                value = deadline,
-                onValueChange = {},
-                label = { Text("Deadline") },
-                modifier = Modifier.fillMaxWidth(),
-                readOnly = true
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                OutlinedTextField(
+                    value = deadline,
+                    onValueChange = {},
+                    label = { Text("Deadline") },
+                    modifier = Modifier.weight(1f),
+                    readOnly = true
+                )
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                // Tombol kalender dengan latar belakang hijau muda
+                IconButton(
+                    onClick = { openDatePicker() },
+                    modifier = Modifier
+                        .size(40.dp) // Ukuran ikon tombol
+                        .background(Color(0xFFB2FF59), shape = CircleShape) // Warna latar belakang hijau muda dan bentuk lingkaran
+                        .padding(8.dp) // Padding di dalam tombol
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.logo_kalender), // Ganti dengan gambar ikon kalender
+                        contentDescription = "Pilih Tanggal",
+                        tint = Color.White // Warna ikon, bisa disesuaikan
+                    )
+                }
+            }
+
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Tombol Pilih Tanggal
-            Button(
-                onClick = { openDatePicker(context) },  // Panggil openDatePicker dengan context
-                modifier = Modifier.fillMaxWidth()
+            // Pilihan Prioritas menggunakan RadioButton
+            Text("Prioritas")
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Text("Pilih Tanggal")
+                prioritasList.forEach { option ->
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        RadioButton(
+                            selected = prioritas == option,
+                            onClick = { prioritas = option }
+                        )
+                        Text(option)
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -119,15 +138,17 @@ fun FormTugasScreen(
                         if (tugasId != null) {
                             // Update tugas lama
                             viewModel.updateTugas(
-                                tugasLama!!.copy(
+                                Tugas(
+                                    id = tugasId,
                                     nama = namaTugas,
-                                    deadline = deadline
+                                    deadline = deadline,
+                                    prioritas = prioritas
                                 )
                             )
                         } else {
                             // Tambah tugas baru
                             viewModel.tambahTugas(
-                                Tugas(nama = namaTugas, deadline = deadline)
+                                Tugas(nama = namaTugas, deadline = deadline, prioritas = prioritas)
                             )
                         }
                         navController.popBackStack() // Navigasi kembali setelah simpan
@@ -138,45 +159,6 @@ fun FormTugasScreen(
             ) {
                 Text("Simpan")
             }
-
-            // Tombol hapus tugas
-            if (tugasId != null) {
-                Spacer(modifier = Modifier.height(16.dp))
-                Button(
-                    onClick = { isDialogOpen = true },
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-                ) {
-                    Text("Hapus Tugas", color = MaterialTheme.colorScheme.onError)
-                }
-            }
-
-            // Dialog konfirmasi hapus
-            if (isDialogOpen) {
-                AlertDialog(
-                    onDismissRequest = { isDialogOpen = false },
-                    title = { Text("Konfirmasi") },
-                    text = { Text("Apakah yakin ingin menghapus tugas ini?") },
-                    confirmButton = {
-                        TextButton(onClick = {
-                            tugasLama?.let {
-                                viewModel.hapusTugas(it)
-                            }
-                            isDialogOpen = false
-                        }) {
-                            Text("Ya")
-                        }
-                    },
-                    dismissButton = {
-                        TextButton(onClick = { isDialogOpen = false }) {
-                            Text("Batal")
-                        }
-                    }
-                )
-            }
         }
     }
 }
-
-
-
-
