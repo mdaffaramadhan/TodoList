@@ -8,6 +8,8 @@ class TugasRepository(private val tugasDao: TugasDao) {
 
     val semuaTugas: Flow<List<Tugas>> = tugasDao.getAll()
 
+    fun getTugasById(id: Int): Flow<Tugas?> = tugasDao.getById(id)
+
     suspend fun tambahTugas(tugas: Tugas) {
         tugasDao.insert(tugas)
     }
@@ -20,4 +22,3 @@ class TugasRepository(private val tugasDao: TugasDao) {
         tugasDao.delete(tugas)
     }
 }
-

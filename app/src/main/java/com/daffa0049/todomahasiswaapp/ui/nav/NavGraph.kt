@@ -6,16 +6,25 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import com.daffa0049.todomahasiswaapp.ui.screens.DaftarTugasScreen
 import com.daffa0049.todomahasiswaapp.ui.screens.FormTugasScreen
+import com.daffa0049.todomahasiswaapp.viewmodel.TugasViewModel
 
 sealed class Screen(val route: String) {
     object DaftarTugas : Screen("daftar_tugas")
-    object FormTugas : Screen("form_tugas")
+    object FormTugas : Screen("form_tugas?id={id}") {
+        fun createRoute(id: Int?) = if (id == null) "form_tugas" else "form_tugas?id=$id"
+    }
 }
 
 @Composable
-fun TodoNavGraph(navController: NavHostController, modifier: Modifier = Modifier) {
+fun TodoNavGraph(
+    navController: NavHostController,
+    viewModel: TugasViewModel,
+    modifier: Modifier = Modifier
+)
+ {
     NavHost(
         navController = navController,
         startDestination = Screen.DaftarTugas.route,
@@ -25,9 +34,17 @@ fun TodoNavGraph(navController: NavHostController, modifier: Modifier = Modifier
             DaftarTugasScreen(navController)
         }
 
-        composable(Screen.FormTugas.route) {
-            // Akan ditambahkan nanti
+        composable(
+            route = Screen.FormTugas.route,
+            arguments = listOf(navArgument("id") {
+                nullable = true
+                defaultValue = null
+            })
+        ) { backStackEntry ->
+            val id = backStackEntry.arguments?.getString("id")?.toIntOrNull()
+            FormTugasScreen(navController, viewModel, id)
         }
+
 
         composable(Screen.FormTugas.route) {
             FormTugasScreen(

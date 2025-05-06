@@ -1,7 +1,6 @@
 package com.daffa0049.todomahasiswaapp.viewmodel
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.daffa0049.todomahasiswaapp.data.Tugas
 import com.daffa0049.todomahasiswaapp.repository.TugasRepository
@@ -9,6 +8,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 
 class TugasViewModel(private val repository: TugasRepository) : ViewModel() {
@@ -16,6 +16,8 @@ class TugasViewModel(private val repository: TugasRepository) : ViewModel() {
     val semuaTugas: StateFlow<List<Tugas>> = repository.semuaTugas
         .map { it }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    fun getTugasById(id: Int): Flow<Tugas?> = repository.getTugasById(id)
 
     fun tambahTugas(tugas: Tugas) {
         viewModelScope.launch {

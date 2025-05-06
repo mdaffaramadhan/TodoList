@@ -8,6 +8,9 @@ interface TugasDao {
     @Query("SELECT * FROM tugas")
     fun getAll(): Flow<List<Tugas>>
 
+    @Query("SELECT * FROM tugas WHERE id = :id")
+    fun getById(id: Int): Flow<Tugas?>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(tugas: Tugas)
 

@@ -24,7 +24,7 @@ class MainActivity : ComponentActivity() {
             TodoMahasiswaAppTheme {
                 val navController = rememberNavController()
                 val viewModel: TugasViewModel = viewModel(factory = viewModelFactory)
-                TodoNavGraph(navController = navController)
+                TodoNavGraph(navController = navController, viewModel = viewModel)
             }
         }
     }
