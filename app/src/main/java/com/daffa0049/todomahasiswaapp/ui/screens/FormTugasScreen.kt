@@ -49,13 +49,22 @@ fun FormTugasScreen(
     viewModel: TugasViewModel,
     tugasId: Int? = null
 ) {
+
+    val tugas by viewModel.getTugasById(tugasId ?: -1).collectAsState(initial = null)
+
     var namaTugas by remember { mutableStateOf("") }
     var deadline by remember { mutableStateOf("") }
     var prioritas by remember { mutableStateOf("Urgent") } // Default pilihan prioritas
     val prioritasList = listOf("Urgent", "Biasa", "Santai") // Daftar prioritas
-    val tugas by viewModel.getTugasById(tugasId ?: -1).collectAsState(initial = null)
-    var showDialog by remember { mutableStateOf(false) }
 
+    if (tugasId != null && tugas != null) {
+
+        namaTugas = tugas?.nama ?: ""
+        deadline = tugas?.deadline ?: ""
+        prioritas = tugas?.prioritas ?: "Urgent"
+    }
+
+    var showDialog by remember { mutableStateOf(false) }
 
 
     // Menggunakan LocalContext di dalam fungsi Composable
