@@ -12,6 +12,7 @@ class UserPreferences(private val context: Context) {
 
     companion object {
         val FILTER_SELESAI = booleanPreferencesKey("filter_selesai")
+        val IS_GRID = booleanPreferencesKey("is_grid")
     }
 
     val filterSelesai: Flow<Boolean> = context.dataStore.data
@@ -19,9 +20,20 @@ class UserPreferences(private val context: Context) {
             preferences[FILTER_SELESAI] ?: false
         }
 
+    val isGridView: Flow<Boolean> = context.dataStore.data
+        .map { preferences -> preferences[IS_GRID] ?: false }
+
     suspend fun setFilterSelesai(showOnlyUnfinished: Boolean) {
         context.dataStore.edit { preferences ->
             preferences[FILTER_SELESAI] = showOnlyUnfinished
         }
     }
+
+    suspend fun setGridView(isGrid: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[IS_GRID] = isGrid
+        }
+    }
+
+
 }

@@ -35,7 +35,7 @@
             composable(Screen.DaftarTugas.route) {
                 val viewModel: TugasViewModel = viewModel(factory = viewModelFactory)
                 viewModel.setUserPreferences(prefs)  // Pastikan ini dipanggil
-                DaftarTugasScreen(navController, viewModel)
+                DaftarTugasScreen(navController = navController, viewModel = viewModel, userPreferences = prefs)
             }
 
             composable(

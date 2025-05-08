@@ -1,8 +1,8 @@
 package com.daffa0049.todomahasiswaapp.ui.screens
 
+import android.annotation.SuppressLint
 import android.app.DatePickerDialog
 import android.widget.DatePicker
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -42,6 +41,7 @@ import com.daffa0049.todomahasiswaapp.viewmodel.TugasViewModel
 import java.text.SimpleDateFormat
 import java.util.Calendar
 
+@SuppressLint("SimpleDateFormat")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FormTugasScreen(
@@ -56,6 +56,9 @@ fun FormTugasScreen(
     var deadline by remember { mutableStateOf("") }
     var prioritas by remember { mutableStateOf("Urgent") } // Default pilihan prioritas
     val prioritasList = listOf("Urgent", "Biasa", "Santai") // Daftar prioritas
+
+    var errorMessage by remember { mutableStateOf("") }
+
 
     if (tugasId != null && tugas != null) {
 
@@ -120,10 +123,15 @@ fun FormTugasScreen(
             // Input Nama Tugas
             OutlinedTextField(
                 value = namaTugas,
-                onValueChange = { namaTugas = it },
+                onValueChange = {
+                    namaTugas = it
+                    errorMessage = "" // Clear error message when the user starts typing
+                },
                 label = { Text("Nama Tugas") },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                isError = errorMessage.isNotEmpty() // Show error if there's a message
             )
+
 
             Spacer(modifier = Modifier.height(8.dp))
 
@@ -146,11 +154,10 @@ fun FormTugasScreen(
                     onClick = { openDatePicker() },
                     modifier = Modifier
                         .size(40.dp) // Ukuran ikon tombol
-                        .background(Color(0xFFB2FF59), shape = CircleShape) // Warna latar belakang hijau muda dan bentuk lingkaran
                         .padding(8.dp) // Padding di dalam tombol
                 ) {
                     Icon(
-                        painter = painterResource(id = R.drawable.logo_kalender), // Ganti dengan gambar ikon kalender
+                        painter = painterResource(id = R.drawable.baseline_edit_calendar_24), // Ganti dengan gambar ikon kalender
                         contentDescription = "Pilih Tanggal",
                         tint = Color.White // Warna ikon, bisa disesuaikan
                     )
@@ -209,7 +216,12 @@ fun FormTugasScreen(
             // Tombol simpan atau tambah tugas
             Button(
                 onClick = {
-                    if (namaTugas.isNotBlank() && deadline.isNotBlank()) {
+                    // Validasi input
+                    if (namaTugas.isBlank() || deadline.isBlank()) {
+                        errorMessage = "Nama Tugas dan Deadline harus diisi"
+                        showDialog = true // Menampilkan alert dialog ketika ada field kosong
+                    } else {
+                        errorMessage = "" // Clear error message when inputs are valid
                         if (tugasId != null) {
                             // Update tugas lama
                             viewModel.updateTugas(
@@ -230,9 +242,25 @@ fun FormTugasScreen(
                     }
                 },
                 modifier = Modifier.align(Alignment.End),
-                enabled = namaTugas.isNotBlank() && deadline.isNotBlank()
+                enabled = namaTugas.isNotBlank() && deadline.isNotBlank() // Button only enabled when both fields are not empty
             ) {
                 Text("Simpan")
+            }
+
+// Menampilkan alert dialog jika ada kolom kosong
+            if (showDialog) {
+                androidx.compose.material3.AlertDialog(
+                    onDismissRequest = { showDialog = false },
+                    title = { Text("Peringatan") },
+                    text = { Text(errorMessage) },
+                    confirmButton = {
+                        Button(
+                            onClick = { showDialog = false }
+                        ) {
+                            Text("OK")
+                        }
+                    }
+                )
             }
         }
     }

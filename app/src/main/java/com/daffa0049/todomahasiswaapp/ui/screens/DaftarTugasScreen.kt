@@ -30,6 +30,7 @@
     import androidx.compose.runtime.getValue
     import androidx.compose.runtime.mutableStateOf
     import androidx.compose.runtime.remember
+    import androidx.compose.runtime.rememberCoroutineScope
     import androidx.compose.runtime.setValue
     import androidx.compose.ui.Modifier
     import androidx.compose.ui.graphics.Color
@@ -37,14 +38,18 @@
     import androidx.compose.ui.unit.dp
     import androidx.navigation.NavController
     import com.daffa0049.todomahasiswaapp.R
+    import com.daffa0049.todomahasiswaapp.data.UserPreferences
     import com.daffa0049.todomahasiswaapp.viewmodel.TugasViewModel
+    import kotlinx.coroutines.launch
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     fun DaftarTugasScreen(
         navController: NavController,
-        viewModel: TugasViewModel
+        viewModel: TugasViewModel,
+        userPreferences: UserPreferences
     ) {
+        val scope = rememberCoroutineScope()
         val daftarTugas by viewModel.semuaTugas.collectAsState()
         var filterTugas by remember { mutableStateOf("Semua") }
         var expanded by remember { mutableStateOf(false) }
@@ -59,7 +64,9 @@
         }
 
         // Variabel untuk kontrol tampilan grid/list
-        var isGrid by remember { mutableStateOf(false) }
+        val isGrid by userPreferences.isGridView.collectAsState(initial = false)
+
+        val coroutineScope = rememberCoroutineScope()
 
         Scaffold(
             topBar = {
@@ -69,9 +76,14 @@
                         Row {
                             // Tombol untuk mengubah tampilan grid/list
                             IconButton(
-                                onClick = { isGrid = !isGrid },
+                                onClick = {
+                                    scope.launch {
+                                        userPreferences.setGridView(!isGrid)
+                                    }
+                                },
                                 modifier = Modifier.padding(8.dp)
-                            ) {
+                            )
+                            {
                                 // Menampilkan ikon list/grid
                                 Icon(
                                     painter = painterResource(id = if (isGrid) R.drawable.baseline_list_24 else R.drawable.baseline_grid_view_24),
