@@ -90,6 +90,15 @@ fun FormTugasScreen(
     Scaffold(
         topBar = {
             TopAppBar(
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.baseline_arrow_back_ios_24),
+                            contentDescription = "Kembali"
+                        )
+                    }
+                },
+
                 title = {
                     Text(if (tugasId != null) "Edit Tugas" else "Tambah Tugas")
                 },
