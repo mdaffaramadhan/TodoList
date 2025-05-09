@@ -14,17 +14,15 @@
     import com.daffa0049.todomahasiswaapp.ui.screens.FormTugasScreen
 
     sealed class Screen(val route: String) {
-        object DaftarTugas : Screen("daftar_tugas")
-        object FormTugas : Screen("form_tugas?id={id}") {
-            fun createRoute(id: Int?) = if (id == null) "form_tugas" else "form_tugas?id=$id"
-        }
+        data object DaftarTugas : Screen("daftar_tugas")
+        data object FormTugas : Screen("form_tugas?id={id}")
     }
 
     @Composable
     fun TodoNavGraph(
         navController: NavHostController,
         viewModelFactory: TugasViewModelFactory,
-        prefs: UserPreferences, // Tambahkan parameter prefs
+        prefs: UserPreferences,
         modifier: Modifier = Modifier
     ) {
         NavHost(
@@ -34,7 +32,7 @@
         ) {
             composable(Screen.DaftarTugas.route) {
                 val viewModel: TugasViewModel = viewModel(factory = viewModelFactory)
-                viewModel.setUserPreferences(prefs)  // Pastikan ini dipanggil
+                viewModel.setUserPreferences(prefs)
                 DaftarTugasScreen(navController = navController, viewModel = viewModel, userPreferences = prefs)
             }
 
@@ -47,7 +45,7 @@
             ) { backStackEntry ->
                 val id = backStackEntry.arguments?.getString("id")?.toIntOrNull()
                 val viewModel: TugasViewModel = viewModel(factory = viewModelFactory)
-                viewModel.setUserPreferences(prefs)  // Pastikan ini dipanggil
+                viewModel.setUserPreferences(prefs)
                 FormTugasScreen(navController, viewModel, id)
             }
         }

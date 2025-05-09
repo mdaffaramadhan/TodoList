@@ -63,10 +63,9 @@
             else -> daftarTugas
         }
 
-        // Variabel untuk kontrol tampilan grid/list
         val isGrid by userPreferences.isGridView.collectAsState(initial = false)
 
-        val coroutineScope = rememberCoroutineScope()
+        rememberCoroutineScope()
 
         Scaffold(
             topBar = {
@@ -74,7 +73,6 @@
                     title = { Text("Daftar Tugas") },
                     actions = {
                         Row {
-                            // Tombol untuk mengubah tampilan grid/list
                             IconButton(
                                 onClick = {
                                     scope.launch {
@@ -84,7 +82,6 @@
                                 modifier = Modifier.padding(8.dp)
                             )
                             {
-                                // Menampilkan ikon list/grid
                                 Icon(
                                     painter = painterResource(id = if (isGrid) R.drawable.baseline_list_24 else R.drawable.baseline_grid_view_24),
                                     contentDescription = "Tampilan Grid/List",
@@ -108,7 +105,6 @@
                     .padding(padding)
                     .padding(16.dp)
             ) {
-                // Dropdown filter untuk memilih prioritas
                 ExposedDropdownMenuBox(
                     expanded = expanded,
                     onExpandedChange = { expanded = !expanded },

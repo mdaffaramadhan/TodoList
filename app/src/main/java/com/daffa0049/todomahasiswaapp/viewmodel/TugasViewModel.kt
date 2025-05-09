@@ -26,15 +26,6 @@ class TugasViewModel(private val repository: TugasRepository) : ViewModel() {
         userPreferences = prefs
     }
 
-    val filterSelesai: Flow<Boolean>
-        get() = userPreferences.filterSelesai
-
-    fun setFilterSelesai(enabled: Boolean) {
-        viewModelScope.launch {
-            userPreferences.setFilterSelesai(enabled)
-        }
-    }
-
     fun getTugasById(id: Int): Flow<Tugas?> = repository.getTugasById(id)
 
     fun tambahTugas(tugas: Tugas) {

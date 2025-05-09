@@ -7,7 +7,7 @@ import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
-@Database(entities = [Tugas::class], version = 2, exportSchema = false) // Ubah versi menjadi 2
+@Database(entities = [Tugas::class], version = 2, exportSchema = false)
 abstract class TugasDatabase : RoomDatabase() {
     abstract fun tugasDao(): TugasDao
 
@@ -15,11 +15,10 @@ abstract class TugasDatabase : RoomDatabase() {
         @Volatile
         private var INSTANCE: TugasDatabase? = null
 
-        // Migrasi dari versi 1 ke 2 untuk menghapus kolom 'selesai' dan menambah kolom 'prioritas'
-        val MIGRATION_1_2 = object : Migration(1, 2) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                // Buat tabel baru tanpa kolom 'selesai', tetapi dengan kolom 'prioritas'
-                database.execSQL(
+
+        private val MIGRATION_1_2 = object : Migration(1, 2) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
                     """
                     CREATE TABLE tugas_new (
                         id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
@@ -30,23 +29,19 @@ abstract class TugasDatabase : RoomDatabase() {
                     """.trimIndent()
                 )
 
-                // Salin data dari tabel lama ke tabel baru, kecuali kolom 'selesai'
-                database.execSQL(
+                db.execSQL(
                     """
                     INSERT INTO tugas_new (id, nama, deadline, prioritas)
                     SELECT id, nama, deadline, 'Medium' FROM tugas
                     """.trimIndent()
                 )
 
-                // Hapus tabel lama
-                database.execSQL("DROP TABLE tugas")
+                db.execSQL("DROP TABLE tugas")
 
-                // Ganti nama tabel baru menjadi 'tugas'
-                database.execSQL("ALTER TABLE tugas_new RENAME TO tugas")
+                db.execSQL("ALTER TABLE tugas_new RENAME TO tugas")
             }
         }
 
-        // Fungsi untuk mendapatkan instance database
         fun getDatabase(context: Context): TugasDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
@@ -54,7 +49,7 @@ abstract class TugasDatabase : RoomDatabase() {
                     TugasDatabase::class.java,
                     "tugas_database"
                 )
-                    .addMigrations(MIGRATION_1_2) // Menambahkan migrasi ke builder
+                    .addMigrations(MIGRATION_1_2)
                     .build()
                 INSTANCE = instance
                 instance

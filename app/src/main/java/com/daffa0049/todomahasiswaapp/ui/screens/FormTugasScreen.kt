@@ -54,8 +54,8 @@ fun FormTugasScreen(
 
     var namaTugas by remember { mutableStateOf("") }
     var deadline by remember { mutableStateOf("") }
-    var prioritas by remember { mutableStateOf("Urgent") } // Default pilihan prioritas
-    val prioritasList = listOf("Urgent", "Biasa", "Santai") // Daftar prioritas
+    var prioritas by remember { mutableStateOf("Urgent") }
+    val prioritasList = listOf("Urgent", "Biasa", "Santai")
 
     var errorMessage by remember { mutableStateOf("") }
 
@@ -68,13 +68,9 @@ fun FormTugasScreen(
     }
 
     var showDialog by remember { mutableStateOf(false) }
-
-
-    // Menggunakan LocalContext di dalam fungsi Composable
     val context = LocalContext.current
     val calendar = Calendar.getInstance()
 
-    // Fungsi untuk membuka dialog pemilih tanggal
     val openDatePicker = {
         val datePickerDialog = DatePickerDialog(
             context,
@@ -91,7 +87,6 @@ fun FormTugasScreen(
         datePickerDialog.show()
     }
 
-    // Scaffold dengan tombol simpan dan hapus
     Scaffold(
         topBar = {
             TopAppBar(
@@ -120,16 +115,15 @@ fun FormTugasScreen(
                 .padding(padding)
                 .padding(16.dp)
         ) {
-            // Input Nama Tugas
             OutlinedTextField(
                 value = namaTugas,
                 onValueChange = {
                     namaTugas = it
-                    errorMessage = "" // Clear error message when the user starts typing
+                    errorMessage = ""
                 },
                 label = { Text("Nama Tugas") },
                 modifier = Modifier.fillMaxWidth(),
-                isError = errorMessage.isNotEmpty() // Show error if there's a message
+                isError = errorMessage.isNotEmpty()
             )
 
 
@@ -149,17 +143,16 @@ fun FormTugasScreen(
 
                 Spacer(modifier = Modifier.width(8.dp))
 
-                // Tombol kalender dengan latar belakang hijau muda
                 IconButton(
                     onClick = { openDatePicker() },
                     modifier = Modifier
-                        .size(40.dp) // Ukuran ikon tombol
-                        .padding(8.dp) // Padding di dalam tombol
+                        .size(40.dp)
+                        .padding(8.dp)
                 ) {
                     Icon(
-                        painter = painterResource(id = R.drawable.baseline_edit_calendar_24), // Ganti dengan gambar ikon kalender
+                        painter = painterResource(id = R.drawable.baseline_edit_calendar_24),
                         contentDescription = "Pilih Tanggal",
-                        tint = Color.White // Warna ikon, bisa disesuaikan
+                        tint = Color.White
                     )
                 }
             }
@@ -194,7 +187,6 @@ fun FormTugasScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Pilihan Prioritas menggunakan RadioButton
             Text("Prioritas")
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -213,17 +205,14 @@ fun FormTugasScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Tombol simpan atau tambah tugas
             Button(
                 onClick = {
-                    // Validasi input
                     if (namaTugas.isBlank() || deadline.isBlank()) {
                         errorMessage = "Nama Tugas dan Deadline harus diisi"
-                        showDialog = true // Menampilkan alert dialog ketika ada field kosong
+                        showDialog = true
                     } else {
-                        errorMessage = "" // Clear error message when inputs are valid
+                        errorMessage = ""
                         if (tugasId != null) {
-                            // Update tugas lama
                             viewModel.updateTugas(
                                 Tugas(
                                     id = tugasId,
@@ -233,34 +222,17 @@ fun FormTugasScreen(
                                 )
                             )
                         } else {
-                            // Tambah tugas baru
                             viewModel.tambahTugas(
                                 Tugas(nama = namaTugas, deadline = deadline, prioritas = prioritas)
                             )
                         }
-                        navController.popBackStack() // Navigasi kembali setelah simpan
+                        navController.popBackStack()
                     }
                 },
                 modifier = Modifier.align(Alignment.End),
-                enabled = namaTugas.isNotBlank() && deadline.isNotBlank() // Button only enabled when both fields are not empty
+                enabled = namaTugas.isNotBlank() && deadline.isNotBlank()
             ) {
                 Text("Simpan")
-            }
-
-// Menampilkan alert dialog jika ada kolom kosong
-            if (showDialog) {
-                androidx.compose.material3.AlertDialog(
-                    onDismissRequest = { showDialog = false },
-                    title = { Text("Peringatan") },
-                    text = { Text(errorMessage) },
-                    confirmButton = {
-                        Button(
-                            onClick = { showDialog = false }
-                        ) {
-                            Text("OK")
-                        }
-                    }
-                )
             }
         }
     }
